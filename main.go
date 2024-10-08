@@ -34,27 +34,31 @@ func main() {
 		w.Write([]byte("You are authorized!"))
 	}))).Methods("GET")
 
-	router.HandleFunc("/api/users", handlers.GetAllUsers(db)).Methods(http.MethodGet)
-	// Promoter
-	router.HandleFunc("/api/promoters", handlers.CreatePromoter(db)).Methods(http.MethodGet)
-	router.HandleFunc("/api/promoters/{id}", handlers.GetPromoter(db)).Methods(http.MethodGet)
-	router.HandleFunc("/api/promoters/{id}", handlers.UpdatePromoter(db)).Methods(http.MethodPut)
-	router.HandleFunc("/api/promoters/{id}", handlers.DeletePromoter(db)).Methods(http.MethodDelete)
+	// Protect users routes
+	router.Handle("/api/users", middleware.ValidateToken(http.HandlerFunc(handlers.GetAllUsers(db)))).Methods(http.MethodGet)
+	router.Handle("/api/users/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.GetUser(db)))).Methods(http.MethodGet)
 
-	router.HandleFunc("/api/promoters/{id}/events/previous", handlers.GetPreviousEvents(db)).Methods(http.MethodGet)
-	router.HandleFunc("/api/promoters/{id}/events/current", handlers.GetCurrentEvents(db)).Methods(http.MethodGet)
-	router.HandleFunc("/api/promoters/{id}/events/scheduled", handlers.GetScheduledEvents(db)).Methods(http.MethodGet)
+	// Promoter routes with validation
+	router.Handle("/api/promoters", middleware.ValidateToken(http.HandlerFunc(handlers.CreatePromoter(db)))).Methods(http.MethodGet)
+	router.Handle("/api/promoters/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.GetPromoter(db)))).Methods(http.MethodGet)
+	router.Handle("/api/promoters/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.UpdatePromoter(db)))).Methods(http.MethodPut)
+	router.Handle("/api/promoters/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.DeletePromoter(db)))).Methods(http.MethodDelete)
 
-	// Participant
-	router.HandleFunc("/api/participants", handlers.CreateParticipant(db)).Methods(http.MethodGet)
-	router.HandleFunc("/api/participants/{id}", handlers.GetParticipant(db)).Methods(http.MethodGet)
-	router.HandleFunc("/api/participants/{id}", handlers.UpdateParticipant(db)).Methods(http.MethodPut)
-	router.HandleFunc("/api/participants/{id}", handlers.DeleteParticipant(db)).Methods(http.MethodDelete)
+	router.Handle("/api/promoters/{id}/events/previous", middleware.ValidateToken(http.HandlerFunc(handlers.GetPreviousEvents(db)))).Methods(http.MethodGet)
+	router.Handle("/api/promoters/{id}/events/current", middleware.ValidateToken(http.HandlerFunc(handlers.GetCurrentEvents(db)))).Methods(http.MethodGet)
+	router.Handle("/api/promoters/{id}/events/scheduled", middleware.ValidateToken(http.HandlerFunc(handlers.GetScheduledEvents(db)))).Methods(http.MethodGet)
 
-	router.HandleFunc("/api/events", handlers.CreateEvent(db)).Methods(http.MethodGet)
-	router.HandleFunc("/api/events/{id}", handlers.GetEvent(db)).Methods(http.MethodGet)
-	router.HandleFunc("/api/events/{id}", handlers.UpdateEvent(db)).Methods(http.MethodPut)
-	router.HandleFunc("/api/events/{id}", handlers.DeleteEvent(db)).Methods(http.MethodDelete)
+	// Participant routes with validation
+	router.Handle("/api/participants", middleware.ValidateToken(http.HandlerFunc(handlers.CreateParticipant(db)))).Methods(http.MethodGet)
+	router.Handle("/api/participants/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.GetParticipant(db)))).Methods(http.MethodGet)
+	router.Handle("/api/participants/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.UpdateParticipant(db)))).Methods(http.MethodPut)
+	router.Handle("/api/participants/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.DeleteParticipant(db)))).Methods(http.MethodDelete)
+
+	// Event routes with validation
+	router.Handle("/api/events", middleware.ValidateToken(http.HandlerFunc(handlers.CreateEvent(db)))).Methods(http.MethodGet)
+	router.Handle("/api/events/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.GetEvent(db)))).Methods(http.MethodGet)
+	router.Handle("/api/events/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.UpdateEvent(db)))).Methods(http.MethodPut)
+	router.Handle("/api/events/{id}", middleware.ValidateToken(http.HandlerFunc(handlers.DeleteEvent(db)))).Methods(http.MethodDelete)
 
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", router))

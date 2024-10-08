@@ -6,6 +6,7 @@ import (
 	"jwt_go_server/models"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"gorm.io/gorm"
 )
 
@@ -20,5 +21,17 @@ func GetAllUsers(db *gorm.DB) http.HandlerFunc {
 			return
 		}
 		json.NewEncoder(w).Encode(users) // Encode tutti gli utenti
+	}
+}
+
+func GetUser(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		var user models.User
+		if err := db.First(&user, vars["id"]).Error; err != nil {
+			http.Error(w, "user not found", http.StatusNotFound)
+			return
+		}
+		json.NewEncoder(w).Encode(user)
 	}
 }
